@@ -1,7 +1,8 @@
 name: Terraform Apply
 
-# Apply is gated twice: it only runs on main, and the job targets the "production"
-# GitHub environment so required reviewers must approve before AWS is touched.
+# Apply is gated three times: it only runs on main, the job targets the "production"
+# GitHub environment so required reviewers must approve, and it is skipped entirely
+# until AWS_APPLY_ROLE_ARN is configured as a repository variable.
 on:
   push:
     branches: [main]
@@ -29,7 +30,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
-    if: github.event_name == 'push' || inputs.confirm == 'apply'
+    # Skipped rather than failed when the role has not been registered yet. Run the
+    # bootstrap-oidc root and set the repository variables to enable this job.
+    if: vars.AWS_APPLY_ROLE_ARN != '' && (github.event_name == 'push' || inputs.confirm == 'apply')
 
     steps:
       - uses: actions/checkout@v4

@@ -23,6 +23,10 @@ jobs:
     name: Plan
     runs-on: ubuntu-latest
 
+    # Skipped rather than failed when the role has not been registered yet. Run the
+    # bootstrap-oidc root and set AWS_PLAN_ROLE_ARN to enable this job.
+    if: vars.AWS_PLAN_ROLE_ARN != ''
+
     steps:
       - uses: actions/checkout@v4
 
