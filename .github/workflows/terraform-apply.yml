@@ -1,0 +1,67 @@
+name: Terraform Apply
+
+# Apply is gated twice: it only runs on main, and the job targets the "production"
+# GitHub environment so required reviewers must approve before AWS is touched.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/terraform-apply.yml"
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type apply to confirm a manual run"
+        required: true
+        default: "no"
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TF_VERSION: "1.9.8"
+  TF_WORKING_DIR: infra
+
+jobs:
+  apply:
+    name: Apply
+    runs-on: ubuntu-latest
+    environment: production
+
+    if: github.event_name == 'push' || inputs.confirm == 'apply'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_APPLY_ROLE_ARN }}
+          role-session-name: gha-terraform-apply-${{ github.run_id }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -backend-config=backend/dev.hcl -input=false
+
+      - name: Terraform apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -auto-approve -input=false -lock-timeout=5m
+
+      - name: Capture outputs
+        id: outputs
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          terraform output -json > outputs.json
+          {
+            echo "### Applied outputs"
+            echo ""
+            echo '```json'
+            cat outputs.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

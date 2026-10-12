@@ -1,0 +1,70 @@
+name: Terraform Plan
+
+# Runs on every pull request and authenticates to AWS with a short-lived OIDC
+# token. No AWS access keys are stored in this repository.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/terraform-plan.yml"
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+env:
+  TF_VERSION: "1.9.8"
+  TF_WORKING_DIR: infra
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          role-session-name: gha-terraform-plan-${{ github.run_id }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -backend-config=backend/dev.hcl -input=false
+
+      - name: Terraform plan
+        id: plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          set -o pipefail
+          terraform plan -no-color -input=false -lock-timeout=5m -out=tfplan | tee plan.txt
+          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Summarise plan
+        if: always()
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          {
+            echo "### Terraform plan"
+            echo ""
+            echo '```terraform'
+            tail -c 60000 plan.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload plan artifact
+        if: steps.plan.outputs.exitcode == '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ github.run_id }}
+          path: ${{ env.TF_WORKING_DIR }}/tfplan
+          retention-days: 5

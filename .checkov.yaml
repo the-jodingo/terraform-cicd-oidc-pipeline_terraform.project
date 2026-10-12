@@ -1,0 +1,26 @@
+# Checkov configuration
+#
+# The skip list below is the set of findings this lab accepts on purpose. Keeping it in one
+# reviewable file is better than scattering inline comments, because a reviewer can see
+# exactly which controls are not enforced and why.
+#
+# Add an entry only with a written justification.
+
+skip-check:
+  # Event notifications require a consumer endpoint. This lab has no consumer, and adding an
+  # unused SNS topic purely to satisfy the check would create a resource nobody reads.
+  - CKV2_AWS_62
+
+  # Cross-region replication doubles storage cost and is a disaster-recovery decision rather
+  # than a sensible default.
+  - CKV_AWS_144
+
+  # Key policies must grant the account root kms:* for administration and must allow service
+  # principals to use the key. Those grants are constrained by aws:SourceAccount and
+  # aws:SourceArn conditions, which these checks do not evaluate.
+  - CKV_AWS_109
+  - CKV_AWS_111
+
+  # KMS key policies require Resource "*" because the policy is attached to the key itself.
+  # This is how KMS works, not an oversight.
+  - CKV_AWS_356

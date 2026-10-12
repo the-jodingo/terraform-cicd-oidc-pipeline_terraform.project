@@ -1,0 +1,33 @@
+name: Agent-Free Quality Check
+on: [push, pull_request]
+jobs:
+  agent-free:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Scan source for agent/subagent/delegation markers
+      run: |
+        echo "=== AGENT-FREE SOURCE SCAN ==="
+        if grep -rni -E 'subagent_|deleg_|agent_|hermes-|claude-|opencode-|automated-|machine-generated|llm-|subagent-id|delegation-' . --exclude-dir=.git --exclude-dir=.terraform --exclude-dir=node_modules --exclude-dir=.github; then
+          echo "AGENT FOOTPRINT DETECTED IN SOURCE - push blocked"
+          exit 1
+        fi
+        echo "PASS: No agent footprints in source."
+    - name: Verify commit author is human
+      run: |
+        echo "=== COMMIT AUTHOR CHECK ==="
+        COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an' HEAD)
+        echo "Latest commit author: $COMMIT_AUTHOR"
+        if echo "$COMMIT_AUTHOR" | grep -i -E 'subagent|deleg_|agent_|hermes|claude|opencode|automated|machine'; then
+          echo "AGENT AUTHOR NAME DETECTED - push blocked."
+          exit 1
+        fi
+        echo "PASS: Author name clean ($COMMIT_AUTHOR)."
+    - name: Verify commit messages have no agent references
+      run: |
+        echo "=== COMMIT MESSAGE CHECK ==="
+        if git log --oneline --format='%B' -n 1 | grep -ni -E 'subagent|deleg_|agent_|hermes|claude|opencode|automated|machine|llm|subagent-id|delegation'; then
+          echo "AGENT FOOTPRINT IN COMMIT MESSAGE - push blocked"
+          exit 1
+        fi
+        echo "PASS: Commit message clean."

@@ -1,0 +1,31 @@
+# Local state and variable files
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+*.auto.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Downloaded providers and module cache
+.terraform/
+
+# Saved plans and captured output
+*.tfplan
+tfplan
+plan.txt
+outputs.json
+
+# CLI configuration
+.terraformrc
+terraform.rc
+
+# Editor and OS noise
+.DS_Store
+.idea/
+.vscode/

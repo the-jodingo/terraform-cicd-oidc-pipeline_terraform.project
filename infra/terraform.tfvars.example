@@ -1,0 +1,14 @@
+aws_region  = "us-east-1"
+project_name = "cicd"
+environment  = "dev"
+owner        = "platform-team"
+
+app_data_bucket_name = "REPLACE-WITH-A-GLOBALLY-UNIQUE-NAME"
+
+log_retention_days          = 365
+bucket_size_alarm_threshold = 10737418240
+
+enable_access_logging      = true
+access_log_expiration_days = 365
+
+noncurrent_version_expiration_days = 90

@@ -1,0 +1,19 @@
+aws_region  = "us-east-1"
+project_name = "cicd"
+owner        = "platform-team"
+
+github_org  = "REPLACE-WITH-YOUR-GITHUB-USER"
+github_repo = "REPLACE-WITH-THIS-REPOSITORY-NAME"
+
+# Keep apply limited to the protected branch. Widening this to a wildcard would
+# let any pull request assume the write role.
+allowed_subject_prefixes = ["pull_request", "ref:refs/heads/main"]
+apply_subject_prefixes   = ["ref:refs/heads/main"]
+
+create_plan_role  = true
+create_apply_role = true
+
+state_bucket_name = ""
+lock_table_name   = "terraform-state-locks"
+
+max_session_duration = 3600
