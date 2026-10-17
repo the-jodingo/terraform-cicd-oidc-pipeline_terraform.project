@@ -3,8 +3,6 @@
 [![Validate](https://github.com/the-jodingo/terraform-cicd-oidc-pipeline_terraform.project/actions/workflows/validate.yml/badge.svg)](https://github.com/the-jodingo/terraform-cicd-oidc-pipeline_terraform.project/actions/workflows/validate.yml)
 [![Terraform Plan](https://github.com/the-jodingo/terraform-cicd-oidc-pipeline_terraform.project/actions/workflows/terraform-plan.yml/badge.svg)](https://github.com/the-jodingo/terraform-cicd-oidc-pipeline_terraform.project/actions/workflows/terraform-plan.yml)
 [![Terraform Apply](https://github.com/the-jodingo/terraform-cicd-oidc-pipeline_terraform.project/actions/workflows/terraform-apply.yml/badge.svg)](https://github.com/the-jodingo/terraform-cicd-oidc-pipeline_terraform.project/actions/workflows/terraform-apply.yml)
-[![Terraform Version](https://img.shields.io/badge/terraform-%3E%3D1.5-7B42BC?logo=terraform&logoColor=white)](https://developer.hashicorp.com/terraform)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A hands-on lab for running Terraform in GitHub Actions with **no stored AWS credentials**.
 You will configure an OIDC trust relationship between GitHub and AWS, then build a pipeline
